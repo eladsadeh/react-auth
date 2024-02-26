@@ -1,79 +1,76 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Root, {
-  loader as rootLoader,
-  action as rootAction,
-} from './routes/root';
+import Root from './routes/root';
+import { Page1, loader } from './routes/Page1';
+import { Page2 } from './routes/Page2';
+import { Page3 } from './routes/Page3';
+import { RootA } from './routes/RootA';
+import { RootB } from './routes/RootB';
+import { Projects } from './routes/Projects';
+import { NoNav } from './routes/NoNav';
 
 import ErrorPage from './error-page';
-import PeopleError from './people-error';
-import Contact, {
-  loader as contactLoader,
-  action as contactAction,
-} from './routes/contact';
-import EditContact, { action as editAction } from './routes/edit';
+
 import Index from './routes/index';
-import { action as destroyAction } from './routes/destroy';
 
 import './index.css';
+import { About } from './routes/About';
+import { TabA } from './routes/TabA';
+// import { About } from './routes/About';
+// import { Tab1 } from './routes/TabA';
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    // path: '/',
     element: <Root />,
     errorElement: <ErrorPage />,
-    loader: rootLoader,
-    action: rootAction,
     children: [
       {
         errorElement: <ErrorPage />,
         children: [
           { index: true, element: <Index /> },
           {
-            path: 'contacts/:contactId',
-            element: <Contact />,
-            loader: contactLoader,
-            action: contactAction,
-            children: [
-              {
-                path: 'edit',
-                element: <EditContact />,
-                loader: contactLoader,
-                action: editAction,
-              },
-              {
-                path: 'destroy',
-                action: destroyAction,
-                errorElement: <div>Oops! There was an error.</div>,
-              },
-            ],
+            path: '/dashboard',
+            element: <Projects />,
+          },
+          {
+            path: '/dashboard/:pKey/*',
+            element: <Page1 />,
+            loader: loader,
+            // children: [
+            //   {
+            //     path: 'team',
+            //     element: <About />,
+            //   },
+            //   {
+            //     path: 'tabA',
+            //     element: <TabA />,
+            //   },
+            // ],
+          },
+          {
+            path: '/settings/:pKey',
+            element: <Page2 />,
+          },
+          {
+            path: '/translations/:pKey',
+            element: <Page3 />,
           },
         ],
       },
+    ],
+  },
+  {
+    element: <NoNav />,
+    children: [
       {
-        errorElement: <PeopleError />,
-        children: [
-          { index: true, element: <Index /> },
-          {
-            path: 'people/:contactId',
-            element: <Contact />,
-            loader: contactLoader,
-            action: contactAction,
-            // errorElement: <ErrorPage />,
-          },
-          {
-            path: 'people/:contactId/edit',
-            element: <EditContact />,
-            loader: contactLoader,
-            action: editAction,
-          },
-          {
-            path: 'people/:contactId/destroy',
-            action: destroyAction,
-            errorElement: <div>Oops! There was an error.</div>,
-          },
-        ],
+        path: '/rootA',
+        element: <RootA />,
+      },
+      {
+        path: '/rootB',
+        element: <RootB />,
       },
     ],
   },

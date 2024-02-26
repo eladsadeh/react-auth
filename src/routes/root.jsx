@@ -1,133 +1,95 @@
 import {
   Outlet,
-  useNavigation,
-  useLoaderData,
-  Form,
-  redirect,
+  useNavigate,
+  useParams,
   NavLink,
-  useSubmit,
+  useLocation,
+  useMatches,
 } from 'react-router-dom';
-import { useEffect } from 'react';
-import { getContacts, createContact } from '../contacts';
 
-export async function loader({ request }) {
-  const url = new URL(request.url);
-  const q = url.searchParams.get('q') || '';
-  const contacts = await getContacts(q);
-  return { contacts, q };
-}
-
-export async function action() {
-  const contact = await createContact();
-  return redirect(`/contacts/${contact.id}/edit`);
-}
+const links = [
+  {
+    to: 'dashboard',
+  },
+  {
+    to: 'settings',
+  },
+  {
+    to: 'translations',
+  },
+];
 
 export default function Root() {
-  const { contacts, q } = useLoaderData();
-  // const [query, setQuery] = useState(q);
-  const navigation = useNavigation();
-  const submit = useSubmit();
-  const searching = navigation.state !== 'idle';
-
-  useEffect(() => {
-    document.getElementById('q').value = q;
-    // setQuery(q);
-  }, [q]);
-
+  const navigate = useNavigate();
+  // console.log('Root::params', useParams());
+  // console.log('Root::matches', useMatches());
+  // console.log('Root::location', useLocation().pathname.split('/'));
+  const { pKey } = useParams();
+  const pageName = useLocation().pathname.split('/')[1];
+  // const [project, setProject] = useState(pKey || 'A');
   return (
-    <>
+    <div className="content">
       <div id="sidebar">
-        <div>
-          <Form id="search-form" role="search">
-            <input
-              id="q"
-              className={searching ? 'loading' : ''}
-              aria-label="Search contacts"
-              placeholder="Search"
-              type="search"
-              name="q"
-              // value={query}
-              onChange={(e) => {
-                const isFirstSearch = q == null;
-                submit(e.currentTarget.form, {
-                  replace: !isFirstSearch,
-                });
-              }}
-              defaultValue={q}
-            />
-            <div id="search-spinner" aria-hidden hidden={!searching} />
-            <div className="sr-only" aria-live="polite"></div>
-          </Form>
-          <Form method="post">
-            <button type="submit">New</button>
-          </Form>
-        </div>
         <nav>
-          <h2>Contacts</h2>
-          {contacts.length ? (
-            <ul>
-              {contacts.map((contact) => (
-                <li key={contact.id}>
-                  <NavLink
-                    to={`contacts/${contact.id}`}
-                    className={({ isActive, isPending }) =>
-                      isActive ? 'active' : isPending ? 'pending' : ''
-                    }
-                  >
-                    {contact.first || contact.last ? (
-                      <>
-                        {contact.first} {contact.last}
-                      </>
-                    ) : (
-                      <i>No Name</i>
-                    )}{' '}
-                    {contact.favorite && <span>★</span>}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>
-              <i>No contacts</i>
-            </p>
-          )}
-          <h2>People</h2>
-          {contacts.length ? (
-            <ul>
-              {contacts.map((contact) => (
-                <li key={contact.id}>
-                  <NavLink
-                    to={`people/${contact.id}`}
-                    className={({ isActive, isPending }) =>
-                      isActive ? 'active' : isPending ? 'pending' : ''
-                    }
-                  >
-                    {contact.first || contact.last ? (
-                      <>
-                        {contact.first} {contact.last}
-                      </>
-                    ) : (
-                      <i>No Name</i>
-                    )}{' '}
-                    {contact.favorite && <span>★</span>}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>
-              <i>No contacts</i>
-            </p>
-          )}
+          <h2>Pages</h2>
+          <ul>
+            {links.map((p) => (
+              <li key={p.to}>
+                <NavLink
+                  to={`${p.to}/${pKey || 'A'}`}
+                  className={({ isActive, isPending }) =>
+                    isActive ? 'active' : isPending ? 'pending' : ''
+                  }
+                >
+                  {p.to}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
         </nav>
-        <h1>React Router Contacts</h1>
+        <h4>Pages without navigation</h4>
+        <ul style={{ paddingLeft: 20 }}>
+          <li>
+            <NavLink
+              to={`/rootA`}
+              className={({ isActive, isPending }) =>
+                isActive ? 'active' : isPending ? 'pending' : ''
+              }
+            >
+              rootA
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to={`/rootB`}
+              className={({ isActive, isPending }) =>
+                isActive ? 'active' : isPending ? 'pending' : ''
+              }
+            >
+              rootB
+            </NavLink>
+          </li>
+        </ul>
       </div>
-      <div
-        id="detail"
-        className={navigation.state === 'loading' ? 'loading' : ''}
-      >
-        <Outlet />
+      <div className="body">
+        <div className="header">
+          <div className="pageName">{pageName}</div>
+          <select
+            defaultValue={pKey}
+            className="selector"
+            onChange={(ev) => {
+              navigate(`dashboard/${ev.target.value}`);
+            }}
+          >
+            <option value="A" label="Project A" />
+            <option value="B" label="Project B" />
+            <option value="C" label="Project C" />
+          </select>
+        </div>
+        <div id="detail">
+          <Outlet />
+        </div>
       </div>
-    </>
+    </div>
   );
 }
