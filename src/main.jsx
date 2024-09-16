@@ -17,8 +17,6 @@ import Index from './routes/index';
 import './index.css';
 import { About } from './routes/About';
 import { TabA } from './routes/TabA';
-// import { About } from './routes/About';
-// import { Tab1 } from './routes/TabA';
 
 const router = createBrowserRouter([
   {
@@ -38,16 +36,16 @@ const router = createBrowserRouter([
             path: '/dashboard/:pKey/*',
             element: <Page1 />,
             loader: loader,
-            // children: [
-            //   {
-            //     path: 'team',
-            //     element: <About />,
-            //   },
-            //   {
-            //     path: 'tabA',
-            //     element: <TabA />,
-            //   },
-            // ],
+            children: [
+              {
+                path: 'team',
+                element: <About />,
+              },
+              {
+                path: 'tabA',
+                element: <TabA />,
+              },
+            ],
           },
           {
             path: '/settings/:pKey',
