@@ -4,8 +4,8 @@ import {
   useParams,
   NavLink,
   useLocation,
-  useMatches,
 } from 'react-router-dom';
+import { useAuth } from '../auth';
 
 const links = [
   {
@@ -21,12 +21,48 @@ const links = [
 
 export default function Root() {
   const navigate = useNavigate();
-  // console.log('Root::params', useParams());
-  // console.log('Root::matches', useMatches());
-  // console.log('Root::location', useLocation().pathname.split('/'));
+  const auth = useAuth();
+  console.log('Root::auth', auth);
+
   const { pKey } = useParams();
   const pageName = useLocation().pathname.split('/')[1];
-  // const [project, setProject] = useState(pKey || 'A');
+
+  const { isAuthenticated, isLoading } = auth;
+
+  const login = () => {
+    auth.signinRedirect().catch((e) => {
+      console.error('error signing in::', e);
+    });
+  };
+
+  const logout = () => {
+    auth.signoutRedirect().catch((e) => {
+      console.error('error signing out::', e);
+    });
+  };
+
+  const showAuthInfo = () => {
+    const { user } = auth;
+    console.log({
+      email: user?.profile?.email,
+      expired: user.expired,
+      expireAt: new Date((user.expires_at || 0) * 1000).toString(),
+    });
+  };
+
+  if (!isAuthenticated && !isLoading) {
+    return (
+      <div>
+        <p>Not authenticated</p>
+        <button onClick={login}>Login</button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <div className="content">
       <div id="sidebar">
@@ -85,6 +121,8 @@ export default function Root() {
             <option value="B" label="Project B" />
             <option value="C" label="Project C" />
           </select>
+          <button onClick={logout}>Logout</button>
+          <button onClick={showAuthInfo}>Auth</button>
         </div>
         <div id="detail">
           <Outlet />

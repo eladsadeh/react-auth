@@ -7,6 +7,7 @@ export default function Index() {
   useEffect(() => {
     navigate(`/dashboard/${pKey}`);
   }, []);
+
   return (
     <p id="zero-state">
       This is a demo for React Router.

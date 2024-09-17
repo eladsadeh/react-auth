@@ -31,11 +31,8 @@ export async function loader({ params }) {
 }
 
 export const Page1 = () => {
-  console.log('Page1.params:', useParams());
   const { pKey } = useParams();
-  console.log('Page1::loaderData:', useLoaderData());
   const { state } = useNavigation();
-  console.log('Page1::Navigation state:', state);
   // const { project } = useLoaderData();
 
   if (state !== 'idle') return <div>Loading</div>;

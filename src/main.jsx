@@ -1,6 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+import { AuthProvider } from './auth/context/AuthProvider';
+// import { oidcConfig } from './auth/oidcConfig';
+import { userManager } from './auth/userManager';
+import { initUser } from './auth/initUser';
+
 import Root from './routes/root';
 import { Page1, loader } from './routes/Page1';
 import { Page2 } from './routes/Page2';
@@ -17,10 +23,12 @@ import Index from './routes/index';
 import './index.css';
 import { About } from './routes/About';
 import { TabA } from './routes/TabA';
+import { PostLogin } from './routes/PostLogin';
+import { PostLogout } from './routes/PostLogout';
 
-const router = createBrowserRouter([
+const routes = [
   {
-    // path: '/',
+    path: '/',
     element: <Root />,
     errorElement: <ErrorPage />,
     children: [
@@ -29,11 +37,11 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Index /> },
           {
-            path: '/dashboard',
+            path: 'dashboard',
             element: <Projects />,
           },
           {
-            path: '/dashboard/:pKey/*',
+            path: 'dashboard/:pKey/*',
             element: <Page1 />,
             loader: loader,
             children: [
@@ -48,11 +56,11 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path: '/settings/:pKey',
+            path: 'settings/:pKey',
             element: <Page2 />,
           },
           {
-            path: '/translations/:pKey',
+            path: 'translations/:pKey',
             element: <Page3 />,
           },
         ],
@@ -72,10 +80,23 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+  {
+    path: '/post_login',
+    element: <PostLogin />,
+  },
+  {
+    path: '/post_logout',
+    element: <PostLogout />,
+  },
+];
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
-);
+const root = ReactDOM.createRoot(document.getElementById('root'));
+initUser(root).then(() => {
+  root.render(
+    <React.StrictMode>
+      <AuthProvider userManager={userManager}>
+        <RouterProvider router={createBrowserRouter(routes)} />
+      </AuthProvider>
+    </React.StrictMode>
+  );
+});
