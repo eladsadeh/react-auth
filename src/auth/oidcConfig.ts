@@ -2,13 +2,16 @@ import { WebStorageStateStore } from 'oidc-client-ts';
 const { protocol, hostname, port } = window.location;
 const origin = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
 
+const { VITE_OICD_CLIENT_ID, VITE_AUTH_AUTHORITY, VITE_OIDC_SCOPE } =
+  import.meta.env;
+
 export const oidcConfig = {
-  authority: 'https://sso-stg.transperfect.com',
-  client_id: 'CqCVnyVRs72RyJT8NhEmI4oqXx8t3Maq2',
+  authority: `${VITE_AUTH_AUTHORITY}`,
+  client_id: `${VITE_OICD_CLIENT_ID}`,
   redirect_uri: `${origin}/post_login`,
   post_logout_redirect_uri: `${origin}/post_logout`,
   silent_redirect_uri: `${origin}/silent_renew`,
-  scope: 'openid email GlobalLinkGO clients offline_access',
+  scope: `${VITE_OIDC_SCOPE}`,
   /*
    * offline_access:
    * is needed for localhost, SSO iframe relies on a secure network
