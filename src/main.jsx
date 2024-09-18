@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
@@ -91,12 +91,17 @@ const routes = [
 ];
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-initUser(root).then(() => {
+
+// Render a loading screen while we initialize the user
+root.render(<div>Intitalizing user ....</div>);
+
+initUser().then(() => {
+  // Render the app
   root.render(
-    <React.StrictMode>
-      <AuthProvider userManager={userManager}>
-        <RouterProvider router={createBrowserRouter(routes)} />
-      </AuthProvider>
-    </React.StrictMode>
+    // <React.StrictMode>
+    <AuthProvider userManager={userManager}>
+      <RouterProvider router={createBrowserRouter(routes)} />
+    </AuthProvider>
+    // </React.StrictMode>
   );
 });

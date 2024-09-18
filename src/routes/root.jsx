@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Outlet,
   useNavigate,
@@ -5,6 +6,7 @@ import {
   NavLink,
   useLocation,
 } from 'react-router-dom';
+import { Log } from 'oidc-client-ts';
 import { useAuth } from '../auth';
 
 const links = [
@@ -20,14 +22,23 @@ const links = [
 ];
 
 export default function Root() {
+  Log.setLevel(Log.DEBUG);
+  Log.setLogger(console);
+
   const navigate = useNavigate();
   const auth = useAuth();
-  console.log('Root::auth', auth);
 
   const { pKey } = useParams();
   const pageName = useLocation().pathname.split('/')[1];
 
-  const { isAuthenticated, isLoading } = auth;
+  const { isAuthenticated, isLoading, activeNavigator } = auth;
+  console.log('Root::auth', {
+    isAuthenticated,
+    isLoading,
+    activeNavigator,
+    user: auth.user,
+    events: auth.events,
+  });
 
   const login = () => {
     auth.signinRedirect().catch((e) => {
@@ -41,14 +52,46 @@ export default function Root() {
     });
   };
 
+  const refresh = () => {
+    auth
+      .signinSilent()
+      .then((user) => {
+        console.log(
+          'Token refreshed::expired at',
+          new Date((user.expires_at || 0) * 1000)
+        );
+      })
+      .catch((e) => {
+        console.error('error refreshing token::', e);
+      });
+  };
+
   const showAuthInfo = () => {
     const { user } = auth;
     console.log({
       email: user?.profile?.email,
       expired: user.expired,
       expireAt: new Date((user.expires_at || 0) * 1000).toString(),
+      authenticated: auth.isAuthenticated,
     });
   };
+  useEffect(() => {
+    // the `return` is important - addAccessTokenExpiring() returns a cleanup function
+    return auth.events.addAccessTokenExpiring(() => {
+      console.log('token expiring');
+      auth
+        .signinSilent()
+        .then((user) => {
+          console.log(
+            'Token refreshed::expires at',
+            new Date((user.expires_at || 0) * 1000)
+          );
+        })
+        .catch((e) => {
+          console.error('error refreshing token::', e);
+        });
+    });
+  }, [auth.events, auth.signinSilent]);
 
   if (!isAuthenticated && !isLoading) {
     return (
@@ -59,7 +102,7 @@ export default function Root() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !auth.isSigninSilent) {
     return <p>Loading...</p>;
   }
 
@@ -122,7 +165,9 @@ export default function Root() {
             <option value="C" label="Project C" />
           </select>
           <button onClick={logout}>Logout</button>
+          <button onClick={refresh}>Refresh</button>
           <button onClick={showAuthInfo}>Auth</button>
+          <button onClick={auth.removeUser}>remove User</button>
         </div>
         <div id="detail">
           <Outlet />

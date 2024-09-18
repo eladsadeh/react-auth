@@ -10,14 +10,19 @@ import { userManager } from './userManager';
 //   return data.status === 200 ? data.data : null;
 // }
 
-export async function initUser(root: ReactDOM.Root): Promise<User | null> {
-  root.render('Loading...');
-  await new Promise((res) => setTimeout(res, 1000));
-  const authUser = await userManager.getUser().catch((err) => {
-    console.error('initUser::error:', err);
-    return null;
-  });
-  console.log('initUser::authUser:', authUser);
+export async function initUser(): Promise<User | null> {
+  // await new Promise((res) => setTimeout(res, 1000));
+  let authUser = await userManager.getUser();
+  if (authUser) {
+    console.log('initUser::refreshing token');
+    authUser = await userManager
+      .signinSilent()
+      .then((user) => user)
+      .catch((err) => {
+        console.log('initUser::Error renewing token:', err);
+        return null;
+      });
+  }
 
   return Promise.resolve(authUser);
 }
